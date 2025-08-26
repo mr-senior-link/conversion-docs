@@ -169,13 +169,6 @@ paths:
       tags:
         - Postback
       parameters:
-        - name: subid
-          in: query
-          required: true
-          description: Unique subscriber identifier
-          schema:
-            type: string
-            example: "sub_12345"
         - name: status
           in: query
           required: true
@@ -276,9 +269,6 @@ components:
         - status
         - datetime
       properties:
-        subid:
-          type: string
-          description: Unique subscriber identifier
         status:
           type: string
           enum:
@@ -312,9 +302,6 @@ components:
         - datetime
         - promo_code
       properties:
-        subid:
-          type: string
-          description: Unique subscriber identifier
         status:
           type: string
           enum:
@@ -380,7 +367,6 @@ components:
       summary: Promo first purchase postback
       description: User completed first purchase with promo code
       value:
-        subid: "sub_12345"
         status: "sale"
         datetime: "2024-01-15T10:45:00Z"
         payment: 99.99
@@ -391,7 +377,6 @@ components:
       summary: Promo subsequent purchase postback
       description: User completed subsequent purchase with promo code
       value:
-        subid: "sub_12345"
         status: "rebill"
         datetime: "2024-01-15T11:00:00Z"
         payment: 149.99
