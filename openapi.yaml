@@ -1,0 +1,407 @@
+openapi: 3.1.0
+info:
+  title: Partner API - Postback Endpoint
+  description: |
+    API for handling postback notifications with various status types.
+    This endpoint processes different types of user interactions and transactions.
+    
+    ## Status Types:
+    
+    **registration** - после регестрации на платформе.
+    Get params:
+    - subid={subid}
+    - status=reg
+    - datetime={datetime(UTC)}
+    
+    **payview** - переход на страницу оплаты.
+    Get params:
+    - subid={subid}
+    - status=payview
+    - datetime={datetime(UTC)}
+    
+    **sale** - после первой покупки (челенджа).
+    Get params:
+    - subid={subid}
+    - status=sale
+    - datetime={datetime(UTC)}
+    - payment={value_in_float}
+    - currency={USD, EUR, ...}
+    
+    **rebill** - каждая последующая покупка (нового челенжа).
+    Get params:
+    - subid={subid}
+    - status=rebill
+    - datetime={datetime(UTC)}
+    - payment={value_in_float}
+    - currency={currency}
+    - tid={unic_id_for_this_clients}
+  version: 1.0.0
+
+servers:
+  - url: http://example.com
+    description: Production server
+
+paths:
+  /get-key/postback:
+    get:
+      summary: Postback notification endpoint
+      description: |
+        Handles various postback notifications for user interactions and transactions.
+        Supports multiple status types with different parameter requirements.
+      operationId: handlePostback
+      tags:
+        - Postback
+      parameters:
+        - name: subid
+          in: query
+          required: true
+          description: Unique subscriber identifier
+          schema:
+            type: string
+            example: "sub_12345"
+        - name: status
+          in: query
+          required: true
+          description: Status type indicating the type of postback
+          schema:
+            type: string
+            enum:
+              - reg
+              - payview
+              - sale
+              - rebill
+          examples:
+            regview:
+              summary: Registration view
+              description: User navigated to registration page
+              value: "regview"
+            registration:
+              summary: Registration completed
+              description: User completed registration
+              value: "reg"
+            payview:
+              summary: Payment view
+              description: User navigated to payment page
+              value: "payview"
+            sale:
+              summary: First purchase
+              description: User completed first purchase
+              value: "sale"
+            rebill:
+              summary: Subsequent purchase
+              description: User completed subsequent purchase
+              value: "rebill"
+
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp in UTC format
+          schema:
+            type: string
+            format: date-time
+            example: "2024-01-15T10:30:00Z"
+
+        - name: payment
+          in: query
+          required: false
+          description: Payment amount as float value (required for sale and rebill statuses)
+          schema:
+            type: number
+            format: float
+            example: 99.99
+        - name: currency
+          in: query
+          required: false
+          description: Payment currency code (required for sale and rebill statuses)
+          schema:
+            type: string
+            enum: [USD, EUR, GBP, CAD, AUD]
+            example: "USD"
+        - name: tid
+          in: query
+          required: false
+          description: Unique transaction ID for this client (required for rebill status)
+          schema:
+            type: string
+            example: "txn_67890"
+      responses:
+        '200':
+          description: Postback processed successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Success"
+              examples:
+                success_response:
+                  summary: Success response
+                  description: Simple success message
+                  value: "Success"
+        '400':
+          description: Bad request - missing required parameters
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "400"
+        '422':
+          description: Unprocessable entity - invalid parameter values
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "422"
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "500"
+
+  /get-key/promo:
+    get:
+      summary: Promo postback notification endpoint
+      description: |
+        Handles promo postback notifications for user transactions with promo codes.
+        Supports sale and rebill status types with promo code parameter.
+      operationId: handlePromoPostback
+      tags:
+        - Postback
+      parameters:
+        - name: subid
+          in: query
+          required: true
+          description: Unique subscriber identifier
+          schema:
+            type: string
+            example: "sub_12345"
+        - name: status
+          in: query
+          required: true
+          description: Status type indicating the type of postback
+          schema:
+            type: string
+            enum:
+              - sale
+              - rebill
+          examples:
+            sale:
+              summary: First purchase
+              description: User completed first purchase
+              value: "sale"
+            rebill:
+              summary: Subsequent purchase
+              description: User completed subsequent purchase
+              value: "rebill"
+        - name: datetime
+          in: query
+          required: true
+          description: Timestamp in UTC format
+          schema:
+            type: string
+            format: date-time
+            example: "2024-01-15T10:30:00Z"
+        - name: payment
+          in: query
+          required: false
+          description: Payment amount as float value (required for sale and rebill statuses)
+          schema:
+            type: number
+            format: float
+            example: 99.99
+        - name: currency
+          in: query
+          required: false
+          description: Payment currency code (required for sale and rebill statuses)
+          schema:
+            type: string
+            enum: [USD, EUR, GBP, CAD, AUD]
+            example: "USD"
+        - name: tid
+          in: query
+          required: false
+          description: Unique transaction ID for this client (required for rebill status)
+          schema:
+            type: string
+            example: "txn_67890"
+        - name: promo_code
+          in: query
+          required: true
+          description: Promo code used for the transaction
+          schema:
+            type: string
+            example: "SUMMER2024"
+      responses:
+        '200':
+          description: Promo postback processed successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Success"
+              examples:
+                success_response:
+                  summary: Success response
+                  description: Simple success message
+                  value: "Success"
+        '400':
+          description: Bad request - missing required parameters
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "400"
+        '422':
+          description: Unprocessable entity - invalid parameter values
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "422"
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "500"
+
+components:
+  schemas:
+    PostbackRequest:
+      type: object
+      required:
+        - subid
+        - status
+        - datetime
+      properties:
+        subid:
+          type: string
+          description: Unique subscriber identifier
+        status:
+          type: string
+          enum:
+            - reg
+            - payview
+            - sale
+            - rebill
+          description: Status type indicating the type of postback
+        datetime:
+          type: string
+          format: date-time
+          description: Timestamp in UTC format
+
+        payment:
+          type: number
+          format: float
+          description: Payment amount (for sale and rebill statuses)
+        currency:
+          type: string
+          enum: [USD, EUR, GBP, CAD, AUD]
+          description: Payment currency code (for sale and rebill statuses)
+        tid:
+          type: string
+          description: Unique transaction ID (for rebill status)
+
+    PromoPostbackRequest:
+      type: object
+      required:
+        - subid
+        - status
+        - datetime
+        - promo_code
+      properties:
+        subid:
+          type: string
+          description: Unique subscriber identifier
+        status:
+          type: string
+          enum:
+            - sale
+            - rebill
+          description: Status type indicating the type of postback
+        datetime:
+          type: string
+          format: date-time
+          description: Timestamp in UTC format
+        payment:
+          type: number
+          format: float
+          description: Payment amount (for sale and rebill statuses)
+        currency:
+          type: string
+          enum: [USD, EUR, GBP, CAD, AUD]
+          description: Payment currency code (for sale and rebill statuses)
+        tid:
+          type: string
+          description: Unique transaction ID (for rebill status)
+        promo_code:
+          type: string
+          description: Promo code used for the transaction
+
+  examples:
+
+    registration_request:
+      summary: Registration completed postback
+      description: User completed registration on the platform
+      value:
+        subid: "sub_12345"
+        status: "reg"
+        datetime: "2024-01-15T10:35:00Z"
+    payview_request:
+      summary: Payment view postback
+      description: User navigated to payment page
+      value:
+        subid: "sub_12345"
+        status: "payview"
+        datetime: "2024-01-15T10:40:00Z"
+    sale_request:
+      summary: First purchase postback
+      description: User completed first purchase (challenge)
+      value:
+        subid: "sub_12345"
+        status: "sale"
+        datetime: "2024-01-15T10:45:00Z"
+        payment: 99.99
+        currency: "USD"
+    rebill_request:
+      summary: Subsequent purchase postback
+      description: User completed subsequent purchase (new challenge)
+      value:
+        subid: "sub_12345"
+        status: "rebill"
+        datetime: "2024-01-15T11:00:00Z"
+        payment: 149.99
+        currency: "USD"
+        tid: "txn_67890"
+
+    promo_sale_request:
+      summary: Promo first purchase postback
+      description: User completed first purchase with promo code
+      value:
+        subid: "sub_12345"
+        status: "sale"
+        datetime: "2024-01-15T10:45:00Z"
+        payment: 99.99
+        currency: "USD"
+        promo_code: "SUMMER2024"
+
+    promo_rebill_request:
+      summary: Promo subsequent purchase postback
+      description: User completed subsequent purchase with promo code
+      value:
+        subid: "sub_12345"
+        status: "rebill"
+        datetime: "2024-01-15T11:00:00Z"
+        payment: 149.99
+        currency: "USD"
+        tid: "txn_67890"
+        promo_code: "WINTER2024"
+
+
+
+
+tags:
+  - name: Postback
+    description: Postback notification endpoints for tracking user interactions and transactions
