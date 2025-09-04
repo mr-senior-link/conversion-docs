@@ -47,7 +47,7 @@ info:
     - user_agent={user_agent}
     - *tid={unic_id_for_this_clients}
 
-  version: 1.0.0
+  version: 1.0.4
 
 servers:
   - url: http://example.com
