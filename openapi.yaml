@@ -14,7 +14,7 @@ info:
     - *datetime={datetime(UTC)}
     - ip={ip}
     - user_agent={user_agent}
-    - tid={unic_id_for_this_clients}
+    - *tid={unic_id_for_this_clients}
     
     **payview** - переход на страницу оплаты.
     Get params:
@@ -23,7 +23,7 @@ info:
     - *datetime={datetime(UTC)}
     - ip={ip}
     - user_agent={user_agent}
-    - tid={unic_id_for_this_clients}
+    - *tid={unic_id_for_this_clients}
     
     **sale** - после первой покупки (челенджа).
     Get params:
@@ -34,7 +34,7 @@ info:
     - currency={USD, EUR, ...}
     - ip={ip}
     - user_agent={user_agent}
-    - tid={unic_id_for_this_clients}
+    - *tid={unic_id_for_this_clients}
     
     **rebill** - каждая последующая покупка (нового челенжа).
     Get params:
@@ -45,7 +45,7 @@ info:
     - currency={currency}
     - ip={ip}
     - user_agent={user_agent}
-    - tid={unic_id_for_this_clients}
+    - *tid={unic_id_for_this_clients}
 
   version: 1.0.0
 
@@ -125,7 +125,7 @@ paths:
             example: "USD"
         - name: tid
           in: query
-          required: false
+          required: true
           description: Unique transaction ID for this client (available for any status)
           schema:
             type: string
@@ -186,7 +186,7 @@ paths:
                 type: string
                 example: "500"
 
-  /promo:
+  /get-key/promo:
     get:
       summary: Validate promo code
       description: Validates provided promo code and returns validation status.
@@ -212,39 +212,6 @@ paths:
                   status:
                     type: boolean
                     description: Whether the promo code is valid
-
-components:
-  schemas:
-    PostbackRequest:
-      type: object
-      required:
-        - status
-        - datetime
-      properties:
-        status:
-          type: string
-          enum:
-            - reg
-            - payview
-            - sale
-            - rebill
-          description: Status type indicating the type of postback
-        datetime:
-          type: string
-          format: date-time
-          description: Timestamp in UTC format
-
-        payment:
-          type: number
-          format: float
-          description: Payment amount (for sale and rebill statuses)
-        currency:
-          type: string
-          enum: [USD, EUR, GBP, CAD, AUD]
-          description: Payment currency code (for sale and rebill statuses)
-        tid:
-          type: string
-          description: Unique transaction ID (for rebill status)
 
 tags:
   - name: Postback
